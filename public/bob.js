@@ -1,14 +1,11 @@
 // bob
 
-delete localStorage.answer;
-delete localStorage.bob;
-
-var offer = JSON.parse(localStorage['offer']);
-var cand = JSON.parse(localStorage['alice']);
+var offer = invite.offer;
+var cand = invite.cand;
 
 var peer = new RTCPeerConnection({iceServers: [{url: 'stun:stun.l.google.com:19302'}]}, {});
 var channel;
-function eh(msg) { return (e) => console.log('error', msg, e); }
+function carp(msg) { return (e) => console.log('error', msg, e); }
 
 peer.ondatachannel = (ch) => {
   channel = ch.channel;
@@ -29,13 +26,13 @@ peer.onicecandidate = function(event) {
 
 peer.setRemoteDescription(new RTCSessionDescription(offer), () => {
   console.log('succ');
-}, eh('setRemoteDescription'));
+}, carp('setRemoteDescription'));
 
 peer.createAnswer((answer) => {
   console.log('answered');
   localStorage['answer'] = JSON.stringify(answer);
   peer.setLocalDescription(answer);
-}, eh('createAnswer'));
+}, carp('createAnswer'));
 
 peer.addIceCandidate(cand)
   .then(() => console.log("ice succ"))
