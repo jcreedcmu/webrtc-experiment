@@ -38,7 +38,7 @@ function acceptOffer(invite) {
 
   peer.createAnswer((answer) => {
 	 console.log('answered');
-	 const ws = new WebSocket("ws://" + location.hostname + ":8080");
+	 const ws = new WebSocket("ws://" + location.host + "/ws");
 	 ws.onopen = () => {
 		ws.send(JSON.stringify({t: "respond", id, payload: answer}));
 	 };

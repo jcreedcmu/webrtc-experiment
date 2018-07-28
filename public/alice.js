@@ -4,7 +4,7 @@ const global = {};
 
 function carp(msg) { return (e) => console.log('error', msg, e); }
 
-const ws = new WebSocket("ws://" + location.hostname + ":8080");
+const ws = new WebSocket("ws://" + location.host + "/ws");
 function maybeGenerateInvite() {
   if (invite.offer && invite.cand) {
 	 ws.send(JSON.stringify({t: "put", payload: invite}));

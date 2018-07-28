@@ -6,12 +6,11 @@ const url = require('url');
 const bodyParser = require('body-parser');
 const uuid = require('uuid/v1');
 
-function Matcher() {
-  const board = this.board = {};
-  const wss = new ws.Server({port: 8080});
-  wss.on('connection', (conn) => {
-	 function snd(conn, x) { conn.send(JSON.stringify(x)) }
+function snd(conn, x) { conn.send(JSON.stringify(x)) }
 
+function Matcher(app) {
+  const board = this.board = {};
+  app.ws('/ws', (conn, req) => {
 	 console.log('conn');
 	 conn.on('message', (msg) => {
 		const cmd = JSON.parse(msg);
@@ -33,7 +32,10 @@ function Matcher() {
   });
 }
 
-const matcher = new Matcher();
+// websocket upgrade plumbing, see
+// https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
+const expressWs = require('express-ws')(app);
+const matcher = new Matcher(app);
 
 app.engine('mst', mustache);
 mustache.cache = undefined; // disable cache for debugging purposes
@@ -43,6 +45,7 @@ app.set('view engine', 'mst');
 app.use(express.static('public'));
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+
 
 app.get('/', function(request, response) {
   response.sendFile(__dirname + '/public/index.html');
