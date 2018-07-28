@@ -1,6 +1,7 @@
 // bob
 
 const global = {};
+const proto = location.protocol.replace(/http/g, 'ws');
 
 acceptOffer(invite);
 
@@ -38,7 +39,7 @@ function acceptOffer(invite) {
 
   peer.createAnswer((answer) => {
 	 console.log('answered');
-	 const ws = new WebSocket("ws://" + location.host + "/ws");
+	 const ws = new WebSocket(proto + "//" + location.host + "/ws");
 	 ws.onopen = () => {
 		ws.send(JSON.stringify({t: "respond", id, payload: answer}));
 	 };
