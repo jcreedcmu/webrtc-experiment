@@ -4,17 +4,28 @@ const global = {};
 
 function carp(msg) { return (e) => console.log('error', msg, e); }
 
+const ws = new WebSocket("ws://" + location.hostname + ":8080");
 function maybeGenerateInvite() {
-  console.log(">", JSON.stringify(invite));
-  $("#tobob")[0].value = JSON.stringify(invite);
   if (invite.offer && invite.cand) {
-	 fetch('/action/add', {headers: {
-      "Content-Type": "application/json; charset=utf-8"
-	 }, method: 'POST', body: JSON.stringify(invite)})
-		.then(x => x.json()).then(response => display(response))
-		.catch(e => console.error(e));
+	 ws.send(JSON.stringify({t: "put", payload: invite}));
   }
 }
+
+ws.onmessage = (msg) => {
+  console.log(msg);
+  const cmd = JSON.parse(msg.data);
+  switch (cmd.t) {
+  case 'added':
+	 const url = '/action/accept?id=' + cmd.id;
+	 $("#invite")[0].innerHTML = `<a href="${url}">Invite Link</a>`
+	 break;
+  case 'response':
+	 aliceStage2(cmd.payload);
+	 break;
+  default:
+	 console.error(msg);
+  }
+};
 
 function aliceStage1() {
   delete localStorage.offer;
@@ -55,9 +66,9 @@ function display(response) {
 	 `<a href="${url}">invite</a>`;
 }
 
-function aliceStage2() {
+function aliceStage2(answer) {
   const peer = global.peer;
-  var answer = JSON.parse($("#frombob")[0].value);
+//  var answer = JSON.parse($("#frombob")[0].value);
   peer.setRemoteDescription(new RTCSessionDescription(answer), () => {
 	 console.log('succ');
   }, carp('setRemoteDescription'));

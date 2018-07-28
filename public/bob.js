@@ -2,10 +2,13 @@
 
 const global = {};
 
+acceptOffer(invite);
+
 function carp(msg) { return (e) => console.log('error', msg, e); }
 
-function acceptOffer() {
-  const invite = JSON.parse($("#fromalice")[0].value);
+//  const invite = JSON.parse($("#fromalice")[0].value);
+
+function acceptOffer(invite) {
   const offer = invite.offer;
   const cand = invite.cand;
 
@@ -35,7 +38,10 @@ function acceptOffer() {
 
   peer.createAnswer((answer) => {
 	 console.log('answered');
-	 $("#toalice")[0].value = JSON.stringify(answer);
+	 const ws = new WebSocket("ws://" + location.hostname + ":8080");
+	 ws.onopen = () => {
+		ws.send(JSON.stringify({t: "respond", id, payload: answer}));
+	 };
 	 peer.setLocalDescription(answer);
   }, carp('createAnswer'));
 

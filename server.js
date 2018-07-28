@@ -6,15 +6,35 @@ const url = require('url');
 const bodyParser = require('body-parser');
 const uuid = require('uuid/v1');
 
-const invites = {};
-const wss = new ws.Server({port: 8080});
+function Matcher() {
+  const board = this.board = {};
+  const wss = new ws.Server({port: 8080});
+  wss.on('connection', (conn) => {
+	 function snd(conn, x) { conn.send(JSON.stringify(x)) }
 
-wss.on('connection', (conn) => {
-  conn.on('message', (msg) => {
-	 console.log('ws msg', JSON.parse(msg))
-	 conn.send(JSON.stringify({"ok": "ok"}));
+	 console.log('conn');
+	 conn.on('message', (msg) => {
+		const cmd = JSON.parse(msg);
+		console.log('ws msg', cmd)
+		switch (cmd.t) {
+		case 'put':
+ 		  const id = uuid();
+		  board[id] = {conn, payload: cmd.payload}; // date for expiration?
+		  snd(conn, {t: 'added', id});
+		  break;
+		case 'respond':
+		  snd(board[cmd.id].conn, {t: 'response', payload: cmd.payload});
+		  delete board[cmd.id];
+		  break;
+		default:
+		  console.error(msg);
+		}
+	 });
   });
-});
+}
+
+const matcher = new Matcher();
+
 app.engine('mst', mustache);
 mustache.cache = undefined; // disable cache for debugging purposes
 
@@ -28,24 +48,17 @@ app.get('/', function(request, response) {
   response.sendFile(__dirname + '/public/index.html');
 });
 
-app.post('/action/add', function(request, response) {
-  try {
-	 const id = uuid();
-	 invites[id] = request.body;
-	 console.log(request.body);
-	 response.json({added: id});
-  }
-  catch(e) {
-	 console.log(e);
-	 response.status(500).send(JSON.stringify({error: e.stack}));
-  }
-});
-
 app.get('/action/accept', function(req, response) {
   try {
 	 const id = req.query.id;
-	 if (invites[id] != null) {
-		response.render('accept', {invite: JSON.stringify(invites[id])});
+	 console.log(id);
+	 console.log(matcher);
+	 console.log(matcher.board);
+	 if (matcher.board[id] != null) {
+		response.render('accept', {
+		  invite: JSON.stringify(matcher.board[id].payload),
+		  id: JSON.stringify(id),
+		});
 	 }
 	 else {
 		response.status(500).send(`No such invite id ${id}`);
