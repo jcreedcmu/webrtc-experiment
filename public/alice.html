@@ -2,8 +2,7 @@
 <script src="alice.js"></script>
 <button onclick="aliceStage1();">generate invite</button><br/>
 Invite link: <span id="invite"></span><br/>
-Invite Data:<br/>
-<textarea rows=6 cols=40 id="tobob"></textarea><br/>
-From Bob:<br/>
-<textarea rows=6 cols=40 id="frombob"></textarea><br/>
-<button onclick="aliceStage2();">accept</button><br/>
+<br/>
+Chat:<br/>
+<textarea rows=6 style="width:400px;" id="chat"></textarea><br/>
+<form onsubmit="chatLine(event);"><input id="line" style="width:400px;"></input></form><br/>

@@ -34,12 +34,15 @@ function aliceStage1() {
   global.peer = new RTCPeerConnection({iceServers: [{url: 'stun:stun.l.google.com:19302'}]}, {});
   const peer = global.peer;
   global.channel = peer.createDataChannel('sctp-channel', {});
-  const channel = global.peer;
+  const channel = global.channel;
 
   channel.onopen = () => console.log('open');
   channel.onclose = () => console.log('close');
   channel.onerror = carp('generic');
-  channel.onmessage = (e) => console.log('message', e);
+  channel.onmessage = (e) => {
+	 console.log('got message ', e);
+	 addLine(e.data);
+  }
   peer.onicecandidate = function(event) {
 	 if (event.candidate) {
 		console.log('ICE CAND!', event.candidate);
@@ -92,4 +95,17 @@ function test() {
 	 .then(x => x.json())
 	 .then(j => {window.j = j; console.log('json back from server: ', j)})
 	 .catch(x => console.error(x));
+}
+
+function addLine(s) {
+  $("#chat")[0].value += "\n" + s;
+}
+
+function chatLine(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  const line = $("#line")[0].value;
+  $("#line")[0].value = '';
+  global.channel.send(line);
+  addLine(line);
 }

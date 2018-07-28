@@ -20,7 +20,7 @@ function acceptOffer(invite) {
 	 channel.onopen = () => console.log('open');
 	 channel.onclose = () => console.log('close');
 	 channel.onerror = (e) => console.log('error', e);
-	 channel.onmessage = (e) => console.log('message', e);
+	 channel.onmessage = (e) => addLine(e.data);
   }
 
   peer.onicecandidate = function(event) {
@@ -48,4 +48,17 @@ function acceptOffer(invite) {
   peer.addIceCandidate(cand)
 	 .then(() => console.log("ice succ"))
 	 .catch((e) => console.error("ice fail", e));
+}
+
+function addLine(s) {
+  $("#chat")[0].value += "\n" + s;
+}
+
+function chatLine(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  const line = $("#line")[0].value;
+  $("#line")[0].value = '';
+  global.channel.send(line);
+  addLine(line);
 }
