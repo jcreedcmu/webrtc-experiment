@@ -1,8 +1,12 @@
 
-let invite = {};
+const invite = {};
+const global = {};
+
+function carp(msg) { return (e) => console.log('error', msg, e); }
 
 function maybeGenerateInvite() {
   console.log(">", JSON.stringify(invite));
+  $("#tobob")[0].value = JSON.stringify(invite);
   if (invite.offer && invite.cand) {
 	 fetch('/action/add', {headers: {
       "Content-Type": "application/json; charset=utf-8"
@@ -15,9 +19,11 @@ function maybeGenerateInvite() {
 function aliceStage1() {
   delete localStorage.offer;
   delete localStorage.alice;
-  var peer = new RTCPeerConnection({iceServers: [{url: 'stun:stun.l.google.com:19302'}]}, {});
-  var channel = peer.createDataChannel('sctp-channel', {});
-  function carp(msg) { return (e) => console.log('error', msg, e); }
+
+  global.peer = new RTCPeerConnection({iceServers: [{url: 'stun:stun.l.google.com:19302'}]}, {});
+  const peer = global.peer;
+  global.channel = peer.createDataChannel('sctp-channel', {});
+  const channel = global.peer;
 
   channel.onopen = () => console.log('open');
   channel.onclose = () => console.log('close');
@@ -50,7 +56,8 @@ function display(response) {
 }
 
 function aliceStage2() {
-  var answer = JSON.parse(localStorage['answer']);
+  const peer = global.peer;
+  var answer = JSON.parse($("#frombob")[0].value);
   peer.setRemoteDescription(new RTCSessionDescription(answer), () => {
 	 console.log('succ');
   }, carp('setRemoteDescription'));

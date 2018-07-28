@@ -1,3 +1,4 @@
+const ws = require('ws');
 const express = require('express');
 const mustache = require('mustache-express')();
 const app = express();
@@ -6,7 +7,14 @@ const bodyParser = require('body-parser');
 const uuid = require('uuid/v1');
 
 const invites = {};
+const wss = new ws.Server({port: 8080});
 
+wss.on('connection', (conn) => {
+  conn.on('message', (msg) => {
+	 console.log('ws msg', JSON.parse(msg))
+	 conn.send(JSON.stringify({"ok": "ok"}));
+  });
+});
 app.engine('mst', mustache);
 mustache.cache = undefined; // disable cache for debugging purposes
 
