@@ -48,8 +48,10 @@ class Matcher {
   }
 }
 
-// // websocket upgrade plumbing, see
-// // https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
+console.log("Hello World from Typescript");
+
+// websocket upgrade plumbing, see
+// https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
 const ews = expressWs(app);
 const matcher = new Matcher(ews.app);
 
