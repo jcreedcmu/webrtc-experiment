@@ -90,8 +90,10 @@ app.get('/action/accept', (req, response) => {
   }
 });
 
-const listener = app.listen(process.env.PORT, () => {
-  console.log('Your app is listening on port ' + process.env.PORT);
+const PORT = process.env.PORT || 3000;
+
+const listener = app.listen(PORT, () => {
+  console.log('Your app is listening on port ' + PORT);
 });
 
 // workflow advice for how to edit locally:
