@@ -29,7 +29,7 @@ ws.onmessage = (msg) => {
   switch (cmd.t) {
     case 'added':
       const url = '/action/accept?id=' + cmd.id;
-      $("#invite")[0].innerHTML = `<a href="${url}">Invite Link</a>`
+      $("#invite")[0].innerHTML = `<a href="${url}" target="blank">Invite Link</a>`
       break;
     case 'response':
       aliceStage2(cmd.payload);
@@ -105,3 +105,8 @@ function chatLine(e: Event) {
   }
   addLine(line);
 }
+
+const g = window as any;
+g.aliceStage1 = aliceStage1;
+g.chatLine = chatLine;
+export = {};
