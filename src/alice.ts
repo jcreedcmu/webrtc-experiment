@@ -53,6 +53,12 @@ class Principal {
     glob.channel = peer.createDataChannel('sctp-channel', {});
     const channel = glob.channel;
 
+    // Some probes into connection changes
+    peer.onconnectionstatechange = (e) => { console.log(e.type, peer.connectionState); };
+    peer.oniceconnectionstatechange = (e) => { console.log(e.type, peer.iceConnectionState); };
+    peer.onsignalingstatechange = (e) => { console.log(e.type, peer.signalingState); };
+    channel.onclose = (e) => { console.log('channel close', e); };
+
     channel.onopen = () => console.log('open');
     channel.onclose = () => console.log('close');
     channel.onerror = carp('generic');
