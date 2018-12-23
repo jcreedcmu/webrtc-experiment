@@ -48,7 +48,7 @@ class Matcher {
   }
 }
 
-console.log("Hello World from Typescript");
+console.log("Hello World from Typescript with Post-install script");
 
 // websocket upgrade plumbing, see
 // https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server

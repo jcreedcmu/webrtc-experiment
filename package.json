@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "watch-server": "tsc -b server-src/tsconfig.json -w"
+    "watch-server": "tsc -b server-src/tsconfig.json -w",
+	 "postinstall": "tsc -b server-src/tsconfig.json"
   },
   "dependencies": {
     "@types/express": "^4.16.0",
