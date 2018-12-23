@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "watch": "tsc -w"
+    "watch-server": "tsc -b server-src/tsconfig.json -w"
   },
   "dependencies": {
     "@types/express": "^4.16.0",
