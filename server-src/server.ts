@@ -37,8 +37,14 @@ class Matcher {
             snd(conn, { t: 'added', id });
             break;
           case 'respond':
-            snd(board[cmd.id].conn, { t: 'response', payload: cmd.payload });
-            delete board[cmd.id];
+            const b = board[cmd.id];
+            if (b != undefined) {
+              snd(board[cmd.id].conn, { t: 'response', payload: cmd.payload });
+              delete board[cmd.id];
+            }
+            else {
+              console.error(`attempt to send on stale board id ${cmd.id}`);
+            }
             break;
           default:
             console.error(msg);
