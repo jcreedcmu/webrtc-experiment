@@ -1,11 +1,11 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="js/alice.js"></script>
 <script>
-  const alice = new Alice();
+  const p = new Principal();
 </script>
-<button onclick="alice.aliceStage1();">generate invite</button><br/>
+<button onclick="p.aliceStage1();">generate invite</button><br/>
 Invite link: <span id="invite"></span><br/>
 <br/>
 Chat:<br/>
 <textarea rows=6 style="width:400px;" id="chat"></textarea><br/>
-<form onsubmit="alice.chatLine(event);"><input id="line" style="width:400px;"></input></form><br/>
+<form onsubmit="p.chatLine(event);"><input id="line" style="width:400px;"></input></form><br/>
