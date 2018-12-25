@@ -1,7 +1,7 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="/js/alice.js"></script>
+<script src="/js/main.js"></script>
 <script>
-  const p = new Principal();
+  const p = new Main.Principal();
 </script>
 
 Chat:<br/>

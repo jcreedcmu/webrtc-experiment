@@ -14,7 +14,7 @@ type Cmd =
   | { t: 'added', id: string }
   | { t: 'response', payload: RTCSessionDescriptionInit };
 
-class Principal {
+export class Principal {
   invite: Invite = {};
   glob: Global = {};
   proto = location.protocol.replace(/http/g, 'ws');
