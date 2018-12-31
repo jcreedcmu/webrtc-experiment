@@ -58,7 +58,7 @@ class App extends React.Component<Props> {
       Invite link: {inviteLink}<br />
       <br />
       Chat:<br />
-      <textarea rows={6} style={{ width: 400 }} id="chat" value={this.state.chatHistory} />
+      <textarea readOnly rows={6} style={{ width: 400 }} id="chat" value={this.state.chatHistory} />
       <br />
       <form onSubmit={e => this.chat(e)}>
         <input id="line" style={{ width: 400 }}
