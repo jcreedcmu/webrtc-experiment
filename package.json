@@ -14,6 +14,8 @@
     "@types/express-ws": "^3.0.0",
     "@types/jquery": "^3.3.28",
     "@types/mustache-express": "^1.2.0",
+    "@types/react": "^16.7.18",
+    "@types/react-dom": "^16.0.11",
     "@types/uuid": "^3.4.4",
     "@types/ws": "^6.0.1",
     "body-parser": "^1.18.3",
@@ -21,6 +23,8 @@
     "express-ws": "^4.0.0",
     "mustache": "^2.3.0",
     "mustache-express": "^1.2.7",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
     "uuid": "^3.3.2",
     "ws": "^6.0.0"
   },
