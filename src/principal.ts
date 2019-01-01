@@ -3,7 +3,7 @@ type Global = {
   channel?: RTCDataChannel,
 }
 
-type Invite = {
+export type Invite = {
   cand?: RTCIceCandidate,
   offer?: RTCSessionDescriptionInit,
 };
@@ -14,13 +14,23 @@ type Cmd =
   | { t: 'added', id: string }
   | { t: 'response', payload: RTCSessionDescriptionInit };
 
+type Role = { t: 'alice' } | { t: 'bob', invite: Invite, id: string };
+
 export class Principal {
+  role: Role;
   connectTime: number = null;
   invite: Invite = {};
   glob: Global = {};
   proto = location.protocol.replace(/http/g, 'ws');
   ws = new WebSocket(this.proto + "//" + location.host + "/ws");
   channelDataCb: (s: string) => void = (s) => { };
+
+  constructor(role: Role) {
+    this.role = role;
+    if (this.role.t == 'bob') {
+      this.bobStage1(this.role);
+    }
+  }
 
   maybeGenerateInvite() {
     const { ws, invite } = this;
@@ -104,9 +114,9 @@ export class Principal {
     }
   }
 
-  bobStage1(invite: Invite, id: string) {
+  bobStage1(bobData: { invite: Invite, id: string }) {
+    const { invite: { offer, cand }, id } = bobData;
     const { glob, proto } = this;
-    const { offer, cand } = invite;
     if (offer == undefined || cand == undefined) {
       throw "malformed invite";
     }
@@ -122,7 +132,7 @@ export class Principal {
       channel.onopen = () => console.log('open');
       channel.onclose = () => console.log('close');
       channel.onerror = (e) => console.log('error', e);
-      channel.onmessage = (e) => { /* addLine(e.data); */ }
+      channel.onmessage = (e) => this.channelDataCb(e.data);
     }
 
     peer.onicecandidate = function(event) {
@@ -152,18 +162,5 @@ export class Principal {
     peer.addIceCandidate(cand)
       .then(() => console.log("ice succ"))
       .catch((e) => console.error("ice fail", e));
-  }
-
-  chatLine(e: Event) {
-    const { glob } = this;
-    e.stopPropagation();
-    e.preventDefault();
-    const lineElm = $("#line")[0] as HTMLInputElement;
-    const line = lineElm.value;
-    lineElm.value = '';
-    if (glob.channel != undefined) {
-      glob.channel.send(line);
-    }
-
   }
 }

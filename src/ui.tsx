@@ -9,17 +9,11 @@ type State = {
   chatLine: string,
 }
 
-export type Cbks = {
-  generateInvite: (e: React.MouseEvent<HTMLButtonElement>, s: State) => State, // p.aliceStage1()
-  chatFn: (e: React.FormEvent<HTMLFormElement>, s: State) => State, // p.chatLine(event);"
-};
-
 type Action =
   { t: "generateInvite", url: string };
 
 type Props = {
   p: Principal,
-  //  dispatch: (a: Action) => void,
 }
 
 class App extends React.Component<Props> {
@@ -43,22 +37,45 @@ class App extends React.Component<Props> {
 
   chat(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    this.state.chatHistory += this.state.chatLine + "\n";
+    e.stopPropagation();
+    const line = this.state.chatLine;
+    this.state.chatHistory += line + "\n";
     this.state.chatLine = "";
     this.setState(this.state);
+    const ch = this.props.p.glob.channel;
+    if (ch != undefined) {
+      ch.send(line);
+    }
+  }
+
+  componentDidMount() {
+    this.props.p.channelDataCb = (data) => {
+      this.state.chatHistory += "> " + data + "\n";
+      this.setState(this.state);
+    };
   }
 
   render() {
-    const inviteLink =
-      this.state.inviteUrl ?
-        (<a href={this.state.inviteUrl} target="_blank">Invite Link</a>) :
-        (<span></span>);
+
+    const inviteSection: () => JSX.Element = () => {
+      if (this.props.p.role.t == 'bob')
+        return <span></span>;
+
+      const inviteLink =
+        this.state.inviteUrl ?
+          (<a href={this.state.inviteUrl} target="_blank">Invite Link</a>) :
+          (<span></span>);
+      return <span>
+        <button onClick={() => this.generateInvite()}>generate invite</button><br />
+        Invite link: {inviteLink}<br />
+        <br />
+      </span>;
+    }
+
     return <div>
-      <button onClick={() => this.generateInvite()}>generate invite</button><br />
-      Invite link: {inviteLink}<br />
-      <br />
-      Chat:<br />
-      <textarea readOnly rows={6} style={{ width: 400 }} id="chat" value={this.state.chatHistory} />
+      {inviteSection()}
+      Chat: <br />
+      < textarea readOnly rows={6} style={{ width: 400 }} id="chat" value={this.state.chatHistory} />
       <br />
       <form onSubmit={e => this.chat(e)}>
         <input id="line" style={{ width: 400 }}

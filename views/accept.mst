@@ -1,15 +1,13 @@
-<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script src="/js/main.js"></script>
-<script>
-  const p = new Main.Principal();
-</script>
-
-Chat:<br/>
-<textarea rows=6 style="width:400px;" id="chat"></textarea><br/>
-<form onsubmit="p.chatLine(event);"><input id="line" style="width:400px;"></input></form><br/>
-
-<script>
-  const invite = {{{invite}}};
-  const id = {{{id}}};
-  p.bobStage1(invite, id);
-</script>
+<html>
+  <head>
+	 <script src="/js/main.js"></script>
+  </head>
+  <body>
+	 <div id="root"></div>
+  </body>
+  <script>
+    const invite = {{{invite}}};
+    const id = {{{id}}};
+    Main.bobEntryPoint(invite, id);
+  </script>
+</html>
