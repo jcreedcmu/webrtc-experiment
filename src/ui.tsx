@@ -1,4 +1,5 @@
 import { Principal } from './principal';
+import * as immer from 'immer';
 
 import React from "react";
 import ReactDOM from "react-dom";
@@ -30,8 +31,7 @@ class App extends React.Component<Props> {
 
   generateInvite() {
     this.props.p.aliceStage1(url => {
-      this.state.inviteUrl = url;
-      this.setState(this.state);
+      this.change(s => s.inviteUrl = url);
     });
   }
 
@@ -39,28 +39,29 @@ class App extends React.Component<Props> {
     e.preventDefault();
     e.stopPropagation();
     const line = this.state.chatLine;
-    this.state.chatHistory += line + "\n";
-    this.state.chatLine = "";
-    this.setState(this.state);
+    this.change(s => {
+      s.chatHistory += line + "\n";
+      s.chatLine = "";
+    });
     const ch = this.props.p.glob.channel;
     if (ch != undefined) {
       ch.send(line);
     }
   }
 
+  change(f: (s: State) => void) {
+    this.setState(s => immer.produce(s, (s: State) => { f(s); }));
+  }
+
   componentDidMount() {
     this.props.p.channelDataCb = (data) => {
-      this.state.chatHistory += "> " + data + "\n";
-      this.setState(this.state);
+      this.change(s => s.chatHistory += "> " + data + "\n");
     };
   }
 
   render() {
 
     const inviteSection: () => JSX.Element = () => {
-      if (this.props.p.role.t == 'bob')
-        return <span></span>;
-
       const inviteLink =
         this.state.inviteUrl ?
           (<a href={this.state.inviteUrl} target="_blank">Invite Link</a>) :
@@ -80,10 +81,8 @@ class App extends React.Component<Props> {
       <form onSubmit={e => this.chat(e)}>
         <input id="line" style={{ width: 400 }}
           value={this.state.chatLine}
-          onChange={(e) => {
-            this.state.chatLine = e.target.value;
-            this.setState(this.state);
-          }}></input>
+          onChange={e => { const v = e.target.value; this.change(s => s.chatLine = v); }}>
+        </input>
       </form>
       <br />
     </div >;

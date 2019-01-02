@@ -14,23 +14,14 @@ type Cmd =
   | { t: 'added', id: string }
   | { t: 'response', payload: RTCSessionDescriptionInit };
 
-type Role = { t: 'alice' } | { t: 'bob', invite: Invite, id: string };
-
 export class Principal {
-  role: Role;
+
   connectTime: number = null;
   invite: Invite = {};
   glob: Global = {};
   proto = location.protocol.replace(/http/g, 'ws');
   ws = new WebSocket(this.proto + "//" + location.host + "/ws");
   channelDataCb: (s: string) => void = (s) => { };
-
-  constructor(role: Role) {
-    this.role = role;
-    if (this.role.t == 'bob') {
-      this.bobStage1(this.role);
-    }
-  }
 
   maybeGenerateInvite() {
     const { ws, invite } = this;
