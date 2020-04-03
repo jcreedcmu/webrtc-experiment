@@ -70,7 +70,7 @@ export class Principal {
     }
     peer.onicecandidate = (event) => {
       if (event.candidate) {
-        console.log('ICE CAND!', event.candidate);
+        console.log('alice stage 1 ICE CAND!', event.candidate);
         if (invite.cand == undefined) {
           invite.cand = event.candidate;
           this.maybeGenerateInvite();
@@ -96,6 +96,7 @@ export class Principal {
         .catch(carp('setRemoteDescription'));
 
       var cand = JSON.parse(localStorage['bob']);
+      console.log(`alice stage 2: cand is ${JSON.stringify(cand)}`);
       peer.addIceCandidate(cand)
         .then(() => console.log("ice succ"))
         .catch((e) => console.error("ice fail", e));
@@ -106,6 +107,8 @@ export class Principal {
   }
 
   bobStage1(bobData: { invite: Invite, id: string }) {
+    delete localStorage.bob;
+
     const { invite: { offer, cand }, id } = bobData;
     const { glob, proto } = this;
     if (offer == undefined || cand == undefined) {
@@ -128,8 +131,9 @@ export class Principal {
 
     peer.onicecandidate = function(event) {
       if (event.candidate) {
-        console.log('ICE CAND!', event.candidate);
+        console.log('bob stage 1 ICE CAND!', event.candidate);
         if (localStorage.bob == undefined) {
+          console.log('bob stage 1 storing', JSON.stringify(event.candidate));
           localStorage.bob = JSON.stringify(event.candidate);
         }
       }
@@ -150,6 +154,7 @@ export class Principal {
       })
       .catch(carp('createAnswer'));
 
+    console.log(`bob stage 1: cand is ${JSON.stringify(cand)}`);
     peer.addIceCandidate(cand)
       .then(() => console.log("ice succ"))
       .catch((e) => console.error("ice fail", e));
