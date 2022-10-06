@@ -10,6 +10,7 @@
     "postinstall": "tsc -p server-src/tsconfig.json && webpack"
   },
   "dependencies": {
+    "esbuild": "^0.15.10",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "immer": "^5.0.0",
