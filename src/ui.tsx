@@ -79,7 +79,7 @@ class App extends React.Component<Props> {
       < textarea readOnly rows={6} style={{ width: 400 }} id="chat" value={this.state.chatHistory} />
       <br />
       <form onSubmit={e => this.chat(e)}>
-        <input id="line" style={{ width: 400 }}
+        <input autoComplete={'off'} id="line" style={{ width: 400 }}
           value={this.state.chatLine}
           onChange={e => { const v = e.target.value; this.change(s => s.chatLine = v); }}>
         </input>
