@@ -26,6 +26,7 @@ export class Principal {
   maybeGenerateInvite() {
     const { ws, invite } = this;
     if (invite.offer && invite.cand) {
+      console.log("alice sending invite along websocket");
       ws.send(JSON.stringify({ t: "put", payload: invite }));
     }
   }
@@ -87,6 +88,7 @@ export class Principal {
   }
 
   aliceStage2(answer: RTCSessionDescriptionInit) {
+    console.log('alice stage 2 happening');
     this.connectTime = Date.now();
     const { glob } = this;
     const peer = glob.peer;
@@ -148,6 +150,7 @@ export class Principal {
         console.log('answered');
         const ws = new WebSocket(proto + "//" + location.host + "/ws");
         ws.onopen = () => {
+          console.log('bob sending response along websocket');
           ws.send(JSON.stringify({ t: "respond", id, payload: answer }));
         };
         peer.setLocalDescription(answer);
