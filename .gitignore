@@ -1,3 +1,5 @@
 node_modules
 server.js
 public/js
+manual/public/manual.js
+manual/public/manual.js.map
