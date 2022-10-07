@@ -27,19 +27,21 @@ async function getDataChannel(peer: RTCPeerConnection): Promise<RTCDataChannel> 
 
 //////
 
+function createChannel(peer: RTCPeerConnection): RTCDataChannel {
+  const channel = peer.createDataChannel('mychannel');
+  initDataChannel(channel);
+  return channel;
+}
+
 function createPeer(): RTCPeerConnection {
   return new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
 }
-async function getOffer(): Promise<Bundle & { channel: RTCDataChannel }> {
-  const peer = createPeer();
 
-  const channel = peer.createDataChannel('mychannel');
-  initDataChannel(channel);
+async function getOffer(peer: RTCPeerConnection): Promise<Tokens> {
   const offer = await peer.createOffer();
   await peer.setLocalDescription(offer);
   const cand = await getFirstIceCandidate(peer);
-
-  return { peer, tokens: { cand, sessionInit: offer }, channel };
+  return { cand, sessionInit: offer };
 }
 
 async function useOffer(tokens: Tokens): Promise<Bundle> {
@@ -57,15 +59,21 @@ async function useAnswer(bundle: Bundle): Promise<void> {
   await peer.addIceCandidate(tokens.cand);
 }
 
+function broadcastOffer(offer: Tokens): void {
+  console.log(`Run this in another window:
+step2(${JSON.stringify(offer)})`);
+}
+
 /////
 
 const G: any = window;
 
 G.step1 = () => {
   (async () => {
-    const { peer, tokens: offer, channel } = await getOffer();
-    console.log(`Run this in another window:
-step2(${JSON.stringify(offer)})`);
+    const peer = createPeer();
+    const channel = createChannel(peer);
+    const offer = await getOffer(peer);
+    broadcastOffer(offer);
     G.peer = peer;
     G.channel = channel;
   })();
