@@ -1,12 +1,4 @@
-type Tokens = {
-  cand: RTCIceCandidate,
-  sessionInit: RTCSessionDescriptionInit,
-};
-
-type Bundle = {
-  peer: RTCPeerConnection,
-  tokens: Tokens,
-}
+import { Tokens, Bundle } from './types';
 
 async function getFirstIceCandidate(peer: RTCPeerConnection): Promise<RTCIceCandidate> {
   return new Promise((res, rej) => {
@@ -35,8 +27,11 @@ async function getDataChannel(peer: RTCPeerConnection): Promise<RTCDataChannel> 
 
 //////
 
+function createPeer(): RTCPeerConnection {
+  return new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+}
 async function getOffer(): Promise<Bundle & { channel: RTCDataChannel }> {
-  const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  const peer = createPeer();
 
   const channel = peer.createDataChannel('mychannel');
   initDataChannel(channel);
@@ -48,7 +43,7 @@ async function getOffer(): Promise<Bundle & { channel: RTCDataChannel }> {
 }
 
 async function useOffer(tokens: Tokens): Promise<Bundle> {
-  const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  const peer = createPeer();
   await peer.setRemoteDescription(new RTCSessionDescription(tokens.sessionInit));
   const answer = await peer.createAnswer();
   peer.setLocalDescription(answer);
