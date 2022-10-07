@@ -59,9 +59,17 @@ async function useAnswer(bundle: Bundle): Promise<void> {
   await peer.addIceCandidate(tokens.cand);
 }
 
-function broadcastOffer(offer: Tokens): void {
+function broadcastOffer(id: string, offer: Tokens): Promise<Tokens> {
   console.log(`Run this in another window:
 step2(${JSON.stringify(offer)})`);
+  return new Promise((res, rej) => {
+    G.step3 = (answer: Tokens) => res(answer);
+  });
+}
+
+function signalAnswer(id: string, answer: Tokens): void {
+  console.log(`Run this in original window:
+step3(${JSON.stringify(answer)})`);
 }
 
 /////
@@ -73,8 +81,10 @@ G.step1 = () => {
     const peer = createPeer();
     const channel = createChannel(peer);
     const offer = await getOffer(peer);
-    broadcastOffer(offer);
-    G.peer = peer;
+    const answerPromise = broadcastOffer('alice', offer);
+    const answer = await answerPromise;
+    useAnswer({ peer, tokens: answer });
+    console.log('opened data channel!');
     G.channel = channel;
   })();
 }
@@ -82,18 +92,10 @@ G.step1 = () => {
 G.step2 = (invite: Tokens) => {
   (async () => {
     const { peer, tokens: answer } = await useOffer(invite);
-    console.log(`Run this in original window:
-step3(${JSON.stringify(answer)})`);
+    signalAnswer('alice', answer);
     const channel = await getDataChannel(peer);
     initDataChannel(channel);
-    console.log('opened data channel');
+    console.log('opened data channel!');
     G.channel = channel;
-  })();
-}
-
-G.step3 = (answer: Tokens) => {
-  (async () => {
-    const channel = await useAnswer({ peer: G.peer, tokens: answer });
-    console.log('opened data channel');
   })();
 }
