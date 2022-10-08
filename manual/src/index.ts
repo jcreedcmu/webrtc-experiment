@@ -1,4 +1,4 @@
-import { Tokens, Bundle } from './types';
+import { Tokens, Bundle, SignalKV, Network } from './types';
 
 async function getFirstIceCandidate(peer: RTCPeerConnection): Promise<RTCIceCandidate> {
   return new Promise((res, rej) => {
@@ -58,11 +58,6 @@ async function useAnswer(bundle: Bundle): Promise<void> {
   await peer.addIceCandidate(tokens.cand);
 }
 
-type SignalKV<T> = {
-  put(key: string, value: T): Promise<void>,
-  get(key: string): Promise<T>,
-}
-
 const table: Record<string, (data: Tokens) => void> = {};
 
 const manualKV: SignalKV<Tokens> = {
@@ -87,28 +82,40 @@ function transmit(id: string, data: Tokens): void {
 const G: any = window;
 G.transmit = transmit;
 
-G.hlListen = () => {
-  (async () => {
+function networkOfSignalling(s: SignalKV<Tokens>): Network {
+  async function listen(id: string) {
     const peer = createPeer();
     const channel = createChannel(peer);
     const offer = await getOffer(peer);
-    await manualKV.put('alice.offer', offer);
-    const answer = await manualKV.get('alice.answer');
+    await manualKV.put(`${id}.offer`, offer);
+    const answer = await manualKV.get(`${id}.answer`);
     useAnswer({ peer, tokens: answer });
     console.log('opened data channel!');
-    G.channel = channel;
+    return channel;
+  }
+  async function connect(id: string) {
+    const peer = createPeer();
+    const channel = createChannel(peer);
+    const offer = await getOffer(peer);
+    await manualKV.put(`${id}.offer`, offer);
+    const answer = await manualKV.get(`${id}.answer`);
+    useAnswer({ peer, tokens: answer });
+    console.log('opened data channel!');
+    return channel;
+  }
+  return { listen, connect };
+}
+
+const net = networkOfSignalling(manualKV);
+
+G.step1 = () => {
+  (async () => {
+    G.channel = await net.listen('alice');
   })();
 }
 
-G.hlConnect = (invite: Tokens) => {
+G.step2 = () => {
   (async () => {
-    const peer = createPeer();
-    const offer = await manualKV.get('alice.offer');
-    const answer = await useOffer(peer, offer);
-    await manualKV.put('alice.answer', answer);
-    const channel = await getDataChannel(peer);
-    initDataChannel(channel);
-    console.log('opened data channel!');
-    G.channel = channel;
+    G.channel = await net.connect('alice');
   })();
 }
