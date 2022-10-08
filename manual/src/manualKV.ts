@@ -1,14 +1,27 @@
 import { Tokens, SignalKV } from './types';
 const G: any = window;
 
-const table: Record<string, (data: Tokens) => void> = {};
+type TableState<T> =
+  | undefined
+  | { t: 'pendingRead', k: (data: T) => void }
+  | { t: 'pendingWrite', v: T };
 
-function transmit(id: string, data: Tokens): void {
-  table[id](data);
+function _transmit<T>(table: Record<string, TableState<T>>, id: string, data: T): void {
+  const entry = table[id];
+  if (entry == undefined) {
+    table[id] = { t: 'pendingWrite', v: data };
+    return;
+  }
+  switch (entry.t) {
+    case 'pendingRead': return entry.k(data);
+    case 'pendingWrite': throw 'unexpected double write';
+  }
 }
 
+const table: Record<string, TableState<Tokens>> = {};
+
 // Install this as global variable so we can easily manually test from console.log
-G.transmit = transmit;
+G.transmit = (id: string, data: Tokens) => { _transmit(table, id, data); }
 
 const codeStyle = `
 border-radius: 5px;
@@ -26,9 +39,16 @@ async function put(key: string, value: Tokens): Promise<void> {
 }
 
 async function get(key: string): Promise<Tokens> {
-  return new Promise((res, rej) => {
-    table[key] = res;
-  });
+  const entry = table[key];
+  if (entry == undefined) {
+    return new Promise((res, rej) => {
+      table[key] = { t: 'pendingRead', k: res };
+    });
+  }
+  switch (entry.t) {
+    case 'pendingWrite': return entry.v;
+    case 'pendingRead': throw 'unexpected double read';
+  }
 }
 
 export const kv: SignalKV<Tokens> = { get, put };
