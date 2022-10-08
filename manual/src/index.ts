@@ -87,19 +87,19 @@ function networkOfSignalling(s: SignalKV<Tokens>): Network {
     const peer = createPeer();
     const channel = createChannel(peer);
     const offer = await getOffer(peer);
-    await manualKV.put(`${id}.offer`, offer);
-    const answer = await manualKV.get(`${id}.answer`);
+    await s.put(`${id}.offer`, offer);
+    const answer = await s.get(`${id}.answer`);
     useAnswer({ peer, tokens: answer });
     console.log('opened data channel!');
     return channel;
   }
   async function connect(id: string) {
     const peer = createPeer();
-    const channel = createChannel(peer);
-    const offer = await getOffer(peer);
-    await manualKV.put(`${id}.offer`, offer);
-    const answer = await manualKV.get(`${id}.answer`);
-    useAnswer({ peer, tokens: answer });
+    const offer = await s.get(`${id}.offer`);
+    const answer = await useOffer(peer, offer);
+    await s.put(`${id}.answer`, answer);
+    const channel = await getDataChannel(peer);
+    initDataChannel(channel);
     console.log('opened data channel!');
     return channel;
   }
