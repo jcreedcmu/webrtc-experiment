@@ -58,18 +58,24 @@ async function useAnswer(bundle: Bundle): Promise<void> {
   await peer.addIceCandidate(tokens.cand);
 }
 
-function fakeWrite(id: string, offer: Tokens): void {
-  console.log(`You should call
-transmit(${JSON.stringify(id)}, ${JSON.stringify(offer)});
-in the other window`);
+type SignalKV<T> = {
+  put(key: string, value: T): Promise<void>,
+  get(key: string): Promise<T>,
 }
 
 const table: Record<string, (data: Tokens) => void> = {};
 
-function fakeRead(id: string): Promise<Tokens> {
-  return new Promise((res, rej) => {
-    table[id] = res;
-  });
+const manualKV: SignalKV<Tokens> = {
+  async put(key, value) {
+    console.log(`You should call:
+transmit(${JSON.stringify(key)}, ${JSON.stringify(value)});
+in the other window`);
+  },
+  get(key: string) {
+    return new Promise((res, rej) => {
+      table[key] = res;
+    });
+  }
 }
 
 function transmit(id: string, data: Tokens): void {
@@ -86,8 +92,8 @@ G.hlListen = () => {
     const peer = createPeer();
     const channel = createChannel(peer);
     const offer = await getOffer(peer);
-    await fakeWrite('alice.offer', offer);
-    const answer = await fakeRead('alice.answer');
+    await manualKV.put('alice.offer', offer);
+    const answer = await manualKV.get('alice.answer');
     useAnswer({ peer, tokens: answer });
     console.log('opened data channel!');
     G.channel = channel;
@@ -97,9 +103,9 @@ G.hlListen = () => {
 G.hlConnect = (invite: Tokens) => {
   (async () => {
     const peer = createPeer();
-    const offer = await fakeRead('alice.offer');
+    const offer = await manualKV.get('alice.offer');
     const answer = await useOffer(peer, offer);
-    await fakeWrite('alice.answer', answer);
+    await manualKV.put('alice.answer', answer);
     const channel = await getDataChannel(peer);
     initDataChannel(channel);
     console.log('opened data channel!');
